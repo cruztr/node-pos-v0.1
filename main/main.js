@@ -1,40 +1,43 @@
-module.exports = function main(inputs) {
-	
-	let returnString = '***<store earning no money>Receipt ***\n';
-	let total = 0;
-	var nameMap = new Map();
+module.exports = function main(input) {
+	var productArray = [];
+	var total = 0;
 
-	for(input of inputs) {
-		if(nameMap.size == 0 || !nameMap.has(input.Name)) {
-			nameMap.set(input.Name, 1);
-		} else{
-			//update map
-		}
+	input.forEach(product => {
+		if(!productArray.find(ele => ele.Barcode == product.Barcode))
+			productArray.push(product);
+	});
+
+	return generateWholeReceipt();
+
+
+
+	function generateWholeReceipt() {
+		let receiptString = '***<store earning no money>Receipt ***\n';
+
+		productArray.forEach(product => {
+			receiptString += printInventory(product, input);
+		});
+
+		receiptString += '----------------------\n' + 
+			'Total: ' + total.toFixed(2) + ' (yuan)\n' +
+ 			'**********************\n';
+
+		return receiptString;
 	}
 
-	nameMap.forEach(printInventory);
+	function printInventory(key, input) {
+		let productName = key.Name;
+		let productQuantity = input.filter(product => product.Barcode == key.Barcode).length;
+		let productUnit = key.Unit == 'bottle' ? ' bottles' : '';
+		let productSubtotal = productQuantity * key.Price;
 	
-
-	function printInventory(value, key, map) {
-		var name = input.Name;
-		var quantity = nameMap.get(name);
-		var subtotal = quantity * input.Price;
-
-		let lineString = 'Name: ' + input.Name +
-    			', Quantity: ' + nameMap.get(input.Name) + 
-    			', Unit price: ' + input.Price + ' (yuan)' +
-				', Subtotal: ' + subtotal + ' (yuan)\n'
+		let lineString = 'Name: ' + productName +
+				', Quantity: ' + productQuantity + productUnit +
+				', Unit price: ' + key.Price.toFixed(2) + ' (yuan)' +
+				', Subtotal: ' + productSubtotal.toFixed(2) + ' (yuan)\n';
 				
-
-		total = total + input.Price;
-
-		returnString = returnString + lineString;
+	
+		total += productSubtotal;
+		return lineString;
 	}
-
-	returnString = returnString + '----------------------\n' + 
-		'Total: ' + total + ' (yuan)\n' +
- 		'**********************\n';
-
-	return returnString;
-	 
 };
